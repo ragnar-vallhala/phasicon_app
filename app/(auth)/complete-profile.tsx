@@ -1,5 +1,5 @@
 import { Stack, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -13,11 +13,12 @@ import {
 } from 'react-native';
 import api from '@/contexts/axios.instance';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAccessToken, getRefreshToken, clearTokens } from '@/contexts/token.service';
 
 export default function CompleteProfileScreen() {
     const router = useRouter();
     const { user } = useAuth();
-
+    const [checkingAuth, setCheckingAuth] = useState(true);
     const [loading, setLoading] = useState(false);
 
     const [firstName, setFirstName] = useState('');
@@ -28,8 +29,30 @@ export default function CompleteProfileScreen() {
     const [address2, setAddress2] = useState('');
     const [state, setState] = useState('');
     const [pincode, setPincode] = useState('');
+    
+    useEffect(() => {
+        const validateAuth = async () => {
+            const accessToken = await getAccessToken();
+            const refreshToken = await getRefreshToken();
 
-    if (!user) return null;
+            if (!user || !accessToken || !refreshToken) {
+                console.log('🚨 Invalid auth state on CompleteProfile', {
+                    user,
+                    accessToken,
+                    refreshToken,
+                });
+
+                await clearTokens();
+                router.replace('/(auth)/login');
+                return;
+            }
+
+            setCheckingAuth(false);
+        };
+
+        validateAuth();
+    }, []);
+
 
     const handleSubmit = async () => {
         if (!firstName || !phone) {
@@ -39,7 +62,7 @@ export default function CompleteProfileScreen() {
 
         setLoading(true);
         try {
-            await api.put(`/profiles/${user.id}`, {
+            await api.put(`/profiles/${user?.id}`, {
                 first_name: firstName,
                 last_name: lastName,
                 phone,
@@ -53,12 +76,15 @@ export default function CompleteProfileScreen() {
             Alert.alert('Success', 'Profile completed');
             router.replace('/(tabs)');
         } catch (err: any) {
+
             console.log('PROFILE UPDATE ERROR', {
                 status: err.response?.status,
                 data: err.response?.data,
                 headers: err.response?.headers,
                 user: user
             });
+            console.log(err);
+
             Alert.alert(
                 'Error',
                 err.response?.data?.error || 'Failed to update profile'
