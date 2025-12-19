@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ashuji2004.phasicon-app"
     },
     "android": {
       "adaptiveIcon": {
@@ -18,8 +19,16 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ],
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.ashuji2004.phasicon_app",
+      "versionCode": 1,
+      "usesCleartextTraffic": true
     },
     "web": {
       "output": "static",
@@ -44,6 +53,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "483d4450-a788-4605-b3bf-7d2700b1ad15"
+      }
+    },
+    "owner": "ashuji2004"
   }
 }
