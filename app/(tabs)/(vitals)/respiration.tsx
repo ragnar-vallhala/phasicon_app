@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme/ThemeProvider';
 import SpotlightCard from '@/components/SpotlightCard';
 import BreathingCoachCard from '@/components/BreathingCoachCard';
+import RespirationTrendChart from '@/components/RespirationTrendChart';
 
 import { mockVitals } from '@/data/mockVitals';
 import { isStressed } from '@/utils/stress';
@@ -100,7 +101,6 @@ export default function RespirationScreen() {
           </Text>
         </Text>
 
-        {/* Status */}
         <Text
           style={{
             marginTop: 8,
@@ -111,7 +111,6 @@ export default function RespirationScreen() {
           State: {breathingState.toLowerCase()}
         </Text>
 
-        {/* Trend */}
         <Text
           style={{
             marginTop: 6,
@@ -120,9 +119,32 @@ export default function RespirationScreen() {
             color: trendColor,
           }}
         >
-          {trend > 0 ? '▲' : trend < 0 ? '▼' : '–'} {Math.abs(trend)} br/min vs baseline
+          {trend > 0 ? '▲' : trend < 0 ? '▼' : '–'} {Math.abs(trend)} br/min vs
+          baseline
         </Text>
       </SpotlightCard>
+
+      {/* ---------- RESPIRATION TREND ---------- */}
+      <View style={{ marginTop: theme.spacing.lg }}>
+        <SpotlightCard intensity={0.35}>
+          <Text
+            style={{
+              fontSize: 14,
+              fontWeight: '700',
+              color: theme.colors.textPrimary,
+              marginBottom: 8,
+            }}
+          >
+            Respiration Trend
+          </Text>
+
+          <RespirationTrendChart
+            data={mockVitals.respiration.trends.Daily}
+            normalMin={mockVitals.respiration.threshold.min!}
+            normalMax={mockVitals.respiration.threshold.max!}
+          />
+        </SpotlightCard>
+      </View>
 
       {/* ---------- INTERPRETATION ---------- */}
       <View style={{ marginTop: theme.spacing.lg }}>

@@ -1,3 +1,4 @@
+// contexts/AuthContext.tsx
 import React, {
   createContext,
   useContext,
@@ -10,18 +11,21 @@ import {
   loginAPI,
   signupAPI,
   verifyOTPAPI,
+  autoLoginAPI,
 } from './auth.api';
 import { setTokens, clearTokens } from './token.service';
 import { User } from './auth.types';
+import { clearCredentials } from './credential.service';
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: ( email: string, password: string) => Promise<any>;
+  signup: (email: string, password: string) => Promise<any>;
   verifyOTP: (email: string, otp: string) => Promise<any>;
   logout: () => Promise<void>;
+  autoLogin: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,14 +33,33 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   /* ---------------- APP BOOTSTRAP ---------------- */
 
   useEffect(() => {
-    loadUser();
+    initializeAuth();
   }, []);
 
-  const loadUser = async () => {
+  const initializeAuth = async () => {
+    try {
+      // Try auto-login first
+      const success = await autoLogin();
+      
+      if (!success) {
+        // If auto-login fails, check for existing session
+        await loadExistingSession();
+      }
+    } catch (error) {
+      console.error('Auth initialization error:', error);
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+      setIsInitializing(false);
+    }
+  };
+
+  const loadExistingSession = async () => {
     try {
       const userData = await AsyncStorage.getItem('user_data');
       const accessToken = await AsyncStorage.getItem('access_token');
@@ -48,11 +71,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch {
       setUser(null);
-    } finally {
-      setIsLoading(false);
     }
   };
 
+  /* ---------------- AUTO LOGIN ---------------- */
+
+  const autoLogin = async (): Promise<boolean> => {
+    try {
+      const result = await autoLoginAPI();
+      
+      if (result) {
+        await setTokens(result.accessToken, result.refreshToken);
+        await AsyncStorage.setItem('user_data', JSON.stringify(result.user));
+        setUser(result.user);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Auto-login failed:', error);
+      return false;
+    }
+  };
 
   /* ---------------- LOGIN ---------------- */
 
@@ -69,7 +108,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       throw err;
     } finally {
-      setIsLoading(false); // 🔥 THIS WAS MISSING
+      setIsLoading(false);
     }
   };
 
@@ -82,7 +121,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   /* ---------------- OTP ---------------- */
 
   const verifyOTP = async (email: string, otp: string) => {
-    return verifyOTPAPI(email, otp);
+    setIsLoading(true);
+    try {
+      const { accessToken, refreshToken, user } = await verifyOTPAPI(email, otp);
+      
+      await setTokens(accessToken, refreshToken);
+      await AsyncStorage.setItem('user_data', JSON.stringify(user));
+      setUser(user);
+      return { success: true };
+    } catch (err: any) {
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   /* ---------------- LOGOUT ---------------- */
@@ -91,6 +142,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     try {
       await clearTokens();
+      await clearCredentials();
       await AsyncStorage.removeItem('user_data');
       setUser(null);
     } finally {
@@ -102,12 +154,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider
       value={{
         user,
-        isLoading,
+        isLoading: isLoading || isInitializing, // Show loading during initialization too
         isAuthenticated: !!user,
         login,
         signup,
         verifyOTP,
         logout,
+        autoLogin,
       }}
     >
       {children}

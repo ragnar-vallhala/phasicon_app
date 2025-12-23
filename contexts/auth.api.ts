@@ -1,5 +1,6 @@
 import api from './axios.instance';
 import { LoginResponse } from './auth.types';
+import { saveCredentials, getCredentials, clearCredentials } from './credential.service';
 
 /* ---------------- LOGIN ---------------- */
 
@@ -8,7 +9,7 @@ export const loginAPI = async (
   password: string
 ): Promise<LoginResponse> => {
   const { data } = await api.post('/auth/login', { email, password });
-
+  await saveCredentials(email, password);
   return {
     accessToken: data.access_token,
     refreshToken: data.refresh_token,
@@ -26,9 +27,8 @@ export const signupAPI = async (
     email,
     password,
   });
-  console.log(data);
-  
   // expects: { next_step: "verify_otp" }
+  await saveCredentials(email, password);
   return data;
 };
 
@@ -48,4 +48,29 @@ export const verifyOTPAPI = async (
     refreshToken: data.refresh_token,
     user: data.user,
   };
+};
+
+export const autoLoginAPI = async (): Promise<LoginResponse | null> => {
+  const credentials = await getCredentials();
+  
+  if (!credentials) {
+    return null;
+  }
+  
+  try {
+    const { data } = await api.post('/auth/login', {
+      email: credentials.email,
+      password: credentials.password,
+    });
+    
+    return {
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+      user: data.user,
+    };
+  } catch (error) {
+    // If auto-login fails, clear stored credentials
+    await clearCredentials();
+    return null;
+  }
 };

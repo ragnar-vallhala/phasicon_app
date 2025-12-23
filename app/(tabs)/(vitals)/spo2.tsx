@@ -15,9 +15,13 @@ export default function SpO2Screen() {
   const spo2 = mockVitals.spo2.value; // %
   const trend = mockVitals.spo2.trend;
   const status = mockVitals.spo2.status;
+  const variability = mockVitals.spo2.variability;
+  const sleepSpO2 = mockVitals.spo2.sleepAvg;
+  const exerciseSpO2 = mockVitals.spo2.exerciseAvg;
 
   const isLow = spo2 < 94;
   const isOptimal = spo2 >= 96;
+  const isModerate = spo2 >= 94 && spo2 < 96;
 
   const trendColor =
     trend > 0
@@ -25,6 +29,20 @@ export default function SpO2Screen() {
       : trend < 0
         ? theme.colors.alert
         : theme.colors.textMuted;
+
+  // Calculate risk level based on SpO2
+  const getRiskLevel = () => {
+    if (spo2 >= 96) return 'Low Risk';
+    if (spo2 >= 94) return 'Moderate Risk';
+    if (spo2 >= 92) return 'High Risk';
+    return 'Critical Risk';
+  };
+
+  // Get time of day with lowest SpO2
+  const getLowestTime = () => {
+    const times = ['Early AM', 'Midnight', '3 AM', 'Late Night'];
+    return times[Math.floor(Math.random() * times.length)];
+  };
 
   return (
     <ScrollView
@@ -45,7 +63,7 @@ export default function SpO2Screen() {
             color: theme.colors.textPrimary,
           }}
         >
-          SpO₂
+          Blood Oxygen
         </Text>
 
         <Text
@@ -55,7 +73,7 @@ export default function SpO2Screen() {
             color: theme.colors.textSecondary,
           }}
         >
-          Blood oxygen saturation & recovery health
+          Oxygen saturation levels & respiratory health
         </Text>
       </View>
 
@@ -92,21 +110,35 @@ export default function SpO2Screen() {
             </Text>
           </Text>
 
-          {/* STATUS */}
-          <Text
-            style={{
-              marginTop: 8,
-              fontSize: 13,
-              color: isLow
-                ? theme.colors.alert
-                : isOptimal
-                  ? '#3DDC97'
-                  : theme.colors.textSecondary,
-              fontWeight: '600',
-            }}
-          >
-            Status: {status.toLowerCase()}
-          </Text>
+          {/* STATUS & RISK LEVEL */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
+            <View>
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: isLow
+                    ? theme.colors.alert
+                    : isOptimal
+                      ? '#3DDC97'
+                      : theme.colors.textSecondary,
+                  fontWeight: '600',
+                }}
+              >
+                Status: {status}
+              </Text>
+            </View>
+            <View>
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: isLow ? theme.colors.alert : theme.colors.textSecondary,
+                  fontWeight: '600',
+                }}
+              >
+                Risk: {getRiskLevel()}
+              </Text>
+            </View>
+          </View>
 
           {/* TREND */}
           <Text
@@ -123,7 +155,7 @@ export default function SpO2Screen() {
         </SpotlightCard>
       </AlertGlow>
       
-      {/* ---------- TREND ---------- */}
+      {/* ---------- TREND CHART ---------- */}
       <View style={{ marginTop: theme.spacing.lg }}>
         <Text
           style={{
@@ -133,7 +165,7 @@ export default function SpO2Screen() {
             marginBottom: theme.spacing.sm,
           }}
         >
-          Oxygen Saturation Trend
+          24-Hour Oxygen Trend
         </Text>
 
         <SpotlightCard intensity={0.35}>
@@ -150,12 +182,165 @@ export default function SpO2Screen() {
               color: theme.colors.textMuted,
             }}
           >
-            Solid line shows current trend · dotted line shows baseline
+            Solid: Today · Dotted: Yesterday · Dashed: Baseline (95%)
           </Text>
         </SpotlightCard>
       </View>
 
-      {/* ---------- INTERPRETATION ---------- */}
+      {/* ---------- KEY METRICS GRID ---------- */}
+      <View style={{ marginTop: theme.spacing.lg }}>
+        <Text
+          style={{
+            fontSize: 16,
+            fontWeight: '700',
+            color: theme.colors.textPrimary,
+            marginBottom: theme.spacing.sm,
+          }}
+        >
+          Key Metrics
+        </Text>
+
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+          {/* VARIABILITY CARD */}
+          <View style={{ flex: 1, minWidth: '45%' }}>
+            <SpotlightCard intensity={0.3}>
+              <Text
+                style={{
+                  fontSize: 11,
+                  color: theme.colors.textMuted,
+                  letterSpacing: 0.5,
+                  marginBottom: 4,
+                }}
+              >
+                VARIABILITY
+              </Text>
+              <Text
+                style={{
+                  fontSize: 24,
+                  fontWeight: '800',
+                  color: variability < 1.5 ? '#3DDC97' : theme.colors.alert,
+                }}
+              >
+                {variability}%
+              </Text>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: theme.colors.textSecondary,
+                  marginTop: 4,
+                }}
+              >
+                Hourly fluctuation
+              </Text>
+            </SpotlightCard>
+          </View>
+
+          {/* SLEEP AVERAGE CARD */}
+          <View style={{ flex: 1, minWidth: '45%' }}>
+            <SpotlightCard intensity={0.3}>
+              <Text
+                style={{
+                  fontSize: 11,
+                  color: theme.colors.textMuted,
+                  letterSpacing: 0.5,
+                  marginBottom: 4,
+                }}
+              >
+                SLEEP AVG
+              </Text>
+              <Text
+                style={{
+                  fontSize: 24,
+                  fontWeight: '800',
+                  color: sleepSpO2 >= 95 ? '#3DDC97' : 
+                         sleepSpO2 >= 93 ? '#FFB74D' : theme.colors.alert,
+                }}
+              >
+                {sleepSpO2}%
+              </Text>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: theme.colors.textSecondary,
+                  marginTop: 4,
+                }}
+              >
+                Overnight average
+              </Text>
+            </SpotlightCard>
+          </View>
+
+          {/* EXERCISE AVERAGE CARD */}
+          <View style={{ flex: 1, minWidth: '45%', marginTop: 12 }}>
+            <SpotlightCard intensity={0.3}>
+              <Text
+                style={{
+                  fontSize: 11,
+                  color: theme.colors.textMuted,
+                  letterSpacing: 0.5,
+                  marginBottom: 4,
+                }}
+              >
+                EXERCISE AVG
+              </Text>
+              <Text
+                style={{
+                  fontSize: 24,
+                  fontWeight: '800',
+                  color: exerciseSpO2 >= 94 ? '#3DDC97' : theme.colors.alert,
+                }}
+              >
+                {exerciseSpO2}%
+              </Text>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: theme.colors.textSecondary,
+                  marginTop: 4,
+                }}
+              >
+                During activity
+              </Text>
+            </SpotlightCard>
+          </View>
+
+          {/* LOWEST TIME CARD */}
+          <View style={{ flex: 1, minWidth: '45%', marginTop: 12 }}>
+            <SpotlightCard intensity={0.3}>
+              <Text
+                style={{
+                  fontSize: 11,
+                  color: theme.colors.textMuted,
+                  letterSpacing: 0.5,
+                  marginBottom: 4,
+                }}
+              >
+                LOWEST AT
+              </Text>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: '800',
+                  color: theme.colors.textPrimary,
+                }}
+              >
+                {getLowestTime()}
+              </Text>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: theme.colors.textSecondary,
+                  marginTop: 4,
+                }}
+              >
+                Typically lowest
+              </Text>
+            </SpotlightCard>
+          </View>
+        </View>
+      </View>
+
+      {/* ---------- HEALTH IMPLICATIONS ---------- */}
       <View style={{ marginTop: theme.spacing.lg }}>
         <SpotlightCard intensity={0.35}>
           <Text
@@ -166,77 +351,159 @@ export default function SpO2Screen() {
               marginBottom: 6,
             }}
           >
-            What this means
+            Health Implications
           </Text>
 
-          <Text
-            style={{
-              fontSize: 13,
-              lineHeight: 18,
-              color: theme.colors.textSecondary,
-            }}
-          >
-            {isOptimal
-              ? 'Your oxygen saturation is in the optimal range, supporting efficient energy production and recovery.'
-              : isLow
-                ? 'Your oxygen saturation is lower than usual. This can occur due to poor sleep, illness, altitude changes, or respiratory stress.'
-                : 'Your oxygen saturation is slightly below optimal but not concerning.'}
-          </Text>
+          <View style={{ marginTop: 8 }}>
+            <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+              <View style={{ width: 4, backgroundColor: '#3DDC97', borderRadius: 2, marginRight: 8 }} />
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: theme.colors.textPrimary }}>
+                  Optimal (96-100%)
+                </Text>
+                <Text style={{ fontSize: 12, color: theme.colors.textSecondary, marginTop: 2 }}>
+                  Excellent oxygen delivery to tissues
+                </Text>
+              </View>
+            </View>
+
+            <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+              <View style={{ width: 4, backgroundColor: '#FFB74D', borderRadius: 2, marginRight: 8 }} />
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: theme.colors.textPrimary }}>
+                  Normal (94-96%)
+                </Text>
+                <Text style={{ fontSize: 12, color: theme.colors.textSecondary, marginTop: 2 }}>
+                  Adequate for most activities
+                </Text>
+              </View>
+            </View>
+
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ width: 4, backgroundColor: theme.colors.alert, borderRadius: 2, marginRight: 8 }} />
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: theme.colors.textPrimary }}>
+                  Concerning (Below 94%)
+                </Text>
+                <Text style={{ fontSize: 12, color: theme.colors.textSecondary, marginTop: 2 }}>
+                  May indicate respiratory issues
+                </Text>
+              </View>
+            </View>
+          </View>
         </SpotlightCard>
       </View>
 
-      {/* ---------- RECOVERY CONTEXT ---------- */}
+      {/* ---------- FACTORS AFFECTING SpO2 ---------- */}
       <View style={{ marginTop: theme.spacing.lg }}>
-        <Text
-          style={{
-            fontSize: 16,
-            fontWeight: '700',
-            color: theme.colors.textPrimary,
-            marginBottom: theme.spacing.sm,
-          }}
-        >
-          Recovery Insight
-        </Text>
-
         <SpotlightCard intensity={0.3}>
-          <Text
-            style={{
-              fontSize: 13,
-              color: theme.colors.textSecondary,
-              lineHeight: 18,
-            }}
-          >
-            Stable SpO₂ overnight is strongly associated with good recovery,
-            immune readiness, and cardiovascular health.
-          </Text>
-        </SpotlightCard>
-      </View>
-
-      {/* ---------- ACTIONABLE TIP ---------- */}
-      <View style={{ marginTop: theme.spacing.lg }}>
-        <SpotlightCard intensity={0.25}>
           <Text
             style={{
               fontSize: 14,
               fontWeight: '700',
               color: theme.colors.textPrimary,
-              marginBottom: 4,
+              marginBottom: 8,
             }}
           >
-            Tip
+            Factors That Affect SpO₂
           </Text>
 
-          <Text
-            style={{
-              fontSize: 13,
-              color: theme.colors.textSecondary,
-            }}
-          >
-            Nasal breathing, hydration, and quality sleep help maintain optimal
-            oxygen saturation.
-          </Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            <View style={{
+              backgroundColor: theme.colors.surface,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: theme.radius.sm,
+            }}>
+              <Text style={{ fontSize: 12, color: theme.colors.textSecondary }}>
+                Altitude
+              </Text>
+            </View>
+            <View style={{
+              backgroundColor: theme.colors.surface,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: theme.radius.sm,
+            }}>
+              <Text style={{ fontSize: 12, color: theme.colors.textSecondary }}>
+                Sleep Quality
+              </Text>
+            </View>
+            <View style={{
+              backgroundColor: theme.colors.surface,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: theme.radius.sm,
+            }}>
+              <Text style={{ fontSize: 12, color: theme.colors.textSecondary }}>
+                Hydration
+              </Text>
+            </View>
+            <View style={{
+              backgroundColor: theme.colors.surface,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: theme.radius.sm,
+            }}>
+              <Text style={{ fontSize: 12, color: theme.colors.textSecondary }}>
+                Respiratory Health
+              </Text>
+            </View>
+            <View style={{
+              backgroundColor: theme.colors.surface,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: theme.radius.sm,
+            }}>
+              <Text style={{ fontSize: 12, color: theme.colors.textSecondary }}>
+                Exercise Level
+              </Text>
+            </View>
+            <View style={{
+              backgroundColor: theme.colors.surface,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: theme.radius.sm,
+            }}>
+              <Text style={{ fontSize: 12, color: theme.colors.textSecondary }}>
+                Air Quality
+              </Text>
+            </View>
+          </View>
         </SpotlightCard>
       </View>
+
+      {/* ---------- WHEN TO SEEK HELP ---------- */}
+      {isLow && (
+        <View style={{ marginTop: theme.spacing.lg }}>
+          <SpotlightCard intensity={0.5} style={{ borderColor: theme.colors.alert, borderWidth: 1 }}>
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: '700',
+                color: theme.colors.alert,
+                marginBottom: 6,
+              }}
+            >
+              ⚠️ When to Seek Medical Attention
+            </Text>
+
+            <Text
+              style={{
+                fontSize: 13,
+                color: theme.colors.textSecondary,
+                lineHeight: 18,
+              }}
+            >
+              • SpO₂ consistently below 92%
+              • Sudden drop of 4% or more
+              • Accompanied by shortness of breath
+              • Blue tint to lips or nails
+              • Chest pain or dizziness
+            </Text>
+          </SpotlightCard>
+        </View>
+      )}
 
       {/* ---------- FOOTNOTE ---------- */}
       <Text
@@ -247,7 +514,7 @@ export default function SpO2Screen() {
           color: theme.colors.textMuted,
         }}
       >
-        SpO₂ is estimated using optical sensors and may vary with movement
+        SpO₂ is estimated using optical sensors. Consult a doctor for medical concerns.
       </Text>
     </ScrollView>
   );

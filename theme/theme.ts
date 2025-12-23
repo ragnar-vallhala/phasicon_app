@@ -37,7 +37,7 @@ export interface AppTheme {
    =========================== */
 
 export const neonGlow = {
-  shadowColor: '#7C8CFF',
+  shadowColor: '#3DFF8E',
   shadowOffset: { width: 0, height: 0 },
   shadowOpacity: 0.6,
   shadowRadius: 14,
@@ -53,19 +53,17 @@ export const DarkTheme: AppTheme = {
   mode: 'dark',
 
   colors: {
-    // Base layers (near-black, AMOLED-friendly)
-    background: '#07080D',   // app background
-    surface: '#0F1118',      // cards / inputs
-    card: '#171A26',         // elevated blocks
+    background: '#07080D',
+    surface: '#0F1118',
+    card: '#171A26',
 
-    // Accent
-    primary: '#7C8CFF',      // electric neon indigo
-    alert: '#FF5C5C',        // neon red
+    // 🌿 Green Neon Accent
+    primary: '#3DFF8E',
+    alert: '#FF5C5C',
 
-    // Text
     textPrimary: '#FFFFFF',
-    textSecondary: '#B8BDE6',
-    textMuted: '#7D82B8',
+    textSecondary: '#BDE6D2',
+    textMuted: '#7FBFA0',
   },
 
   spacing: {
@@ -82,6 +80,7 @@ export const DarkTheme: AppTheme = {
   },
 };
 
+
 /* ===========================
    LIGHT THEME
    Soft Neon (NOT pure white)
@@ -91,16 +90,17 @@ export const LightTheme: AppTheme = {
   mode: 'light',
 
   colors: {
-    background: '#F9FAFF',
+    background: '#F8FFF9',
     surface: '#FFFFFF',
-    card: '#EEF0FF',
+    card: '#ECFFF3',
 
-    primary: '#5E6BFF',      // same hue, toned down
+    // 🌿 Softer Green Neon
+    primary: '#24C16B',
     alert: '#E53935',
 
     textPrimary: '#0A0B14',
-    textSecondary: '#4C4F75',
-    textMuted: '#7A7FAE',
+    textSecondary: '#3F6B54',
+    textMuted: '#6F9E85',
   },
 
   spacing: {

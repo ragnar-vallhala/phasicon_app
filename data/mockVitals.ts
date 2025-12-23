@@ -1,17 +1,14 @@
 // data/mockVitals.ts
-
 export const mockVitals = {
   heartRate: {
-    value: 130,
+    value: 120,
     unit: 'bpm',
     trend: +3,
-    status: 'Normal',
+    status: 'elevated',
     threshold: {
       min: 50,
       max: 110,
     },
-
-    // ✅ NEW (non-breaking)
     trends: {
       Daily: [88, 92, 95, 110, 130],
       Weekly: [82, 85, 90, 94, 98, 102, 108],
@@ -21,7 +18,7 @@ export const mockVitals = {
   },
 
   spo2: {
-    value: 98,
+    value: 99,
     unit: '%',
     trend: 0,
     status: 'Optimal',
@@ -29,7 +26,9 @@ export const mockVitals = {
       min: 92,
       max: 100,
     },
-
+    variability: 1.2,
+    sleepAvg: 95.5,
+    exerciseAvg: 94.8,
     trends: {
       Daily: [96, 97, 98, 98, 98],
       Weekly: [95, 96, 97, 98, 98, 97, 98],
@@ -39,7 +38,7 @@ export const mockVitals = {
   },
 
   gsr: {
-    value: 1.2,
+    value: 4.2,
     unit: 'µS',
     trend: -0.08,
     status: 'Calm',
@@ -47,7 +46,9 @@ export const mockVitals = {
       min: 0.5,
       max: 3.5,
     },
-
+    average: 0.85,
+    peakToday: 1.35,
+    recoveryTime: '5-10 min',
     trends: {
       Daily: [1.6, 1.4, 1.3, 1.25, 1.2],
       Weekly: [1.8, 1.6, 1.5, 1.4, 1.3],
@@ -65,7 +66,6 @@ export const mockVitals = {
       min: 10,
       max: 20,
     },
-
     trends: {
       Daily: [13, 14, 15, 14, 14],
       Weekly: [12, 13, 14, 14, 15, 14, 14],
@@ -83,7 +83,6 @@ export const mockVitals = {
     threshold: {
       max: 38.0,
     },
-
     trends: {
       Daily: [36.6, 36.7, 36.8, 36.8],
       Weekly: [36.5, 36.6, 36.7, 36.8],
@@ -101,18 +100,11 @@ export const mockVitals = {
       min: 3000,
       max: 10000,
     },
-
     trends: {
       Daily: [1200, 1800, 2200, 1600, 1620],
       Weekly: [6500, 7200, 8000, 7400, 7600, 7800, 8420],
       Monthly: [18000, 22000, 26000, 31000, 36000],
       Lifetime: [5000, 15000, 30000, 60000],
     },
-  },
-  // data/mockVitals.ts (append only)
-  spo2Trend: {
-    current: [97, 96, 98, 97, 98, 97],
-    previous: [96, 95, 96, 96, 97, 96],
-    baseline: 96,
   },
 };

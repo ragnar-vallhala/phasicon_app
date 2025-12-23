@@ -4,10 +4,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme/ThemeProvider';
 import SpotlightCard from '@/components/SpotlightCard';
 import GSRBand from '@/components/GSRBand';
-import BreathingCoachCard from '@/components/BreathingCoachCard';
 
 import { mockVitals } from '@/data/mockVitals';
 import { isStressed } from '@/utils/stress';
+import StressTrendChart from '@/components/StressTrendChart';
+
 
 export default function GSRScreen() {
   const theme = useTheme();
@@ -26,8 +27,8 @@ export default function GSRScreen() {
     trend > 0
       ? theme.colors.alert
       : trend < 0
-      ? '#3DDC97'
-      : theme.colors.textMuted;
+        ? '#3DDC97'
+        : theme.colors.textMuted;
 
   return (
     <ScrollView
@@ -94,12 +95,10 @@ export default function GSRScreen() {
           </Text>
         </Text>
 
-        {/* GSR Band */}
         <View style={{ marginTop: 12 }}>
           <GSRBand value={gsr} />
         </View>
 
-        {/* Status */}
         <Text
           style={{
             marginTop: 8,
@@ -110,7 +109,6 @@ export default function GSRScreen() {
           Status: {status.toLowerCase()}
         </Text>
 
-        {/* Trend */}
         <Text
           style={{
             marginTop: 6,
@@ -122,6 +120,26 @@ export default function GSRScreen() {
           {trend > 0 ? '▲' : trend < 0 ? '▼' : '–'} {Math.abs(trend)} µS vs baseline
         </Text>
       </SpotlightCard>
+      {/* ---------- STRESS TREND CHART ---------- */}
+      <View style={{ marginTop: theme.spacing.lg }}>
+        <SpotlightCard intensity={0.35}>
+          <Text
+            style={{
+              fontSize: 14,
+              fontWeight: '700',
+              color: theme.colors.textPrimary,
+              marginBottom: 8,
+            }}
+          >
+            Stress Trend
+          </Text>
+
+          <StressTrendChart
+            data={mockVitals.gsr.trends['Daily']}
+            restingLevel={mockVitals.gsr.average}
+          />
+        </SpotlightCard>
+      </View>
 
       {/* ---------- INTERPRETATION ---------- */}
       <View style={{ marginTop: theme.spacing.lg }}>
@@ -151,34 +169,118 @@ export default function GSRScreen() {
         </SpotlightCard>
       </View>
 
-      {/* ---------- BREATHING COACH ---------- */}
+      {/* ---------- STRESS DRIVERS ---------- */}
       <View style={{ marginTop: theme.spacing.lg }}>
-        <BreathingCoachCard stressed={stressed} />
-      </View>
-
-      {/* ---------- RECENT SPIKES ---------- */}
-      <View style={{ marginTop: theme.spacing.lg }}>
-        <Text
-          style={{
-            fontSize: 16,
-            fontWeight: '700',
-            color: theme.colors.textPrimary,
-            marginBottom: theme.spacing.sm,
-          }}
-        >
-          Recent Spikes
-        </Text>
-
         <SpotlightCard intensity={0.3}>
           <Text
             style={{
-              fontSize: 13,
-              color: theme.colors.textSecondary,
-              lineHeight: 18,
+              fontSize: 14,
+              fontWeight: '700',
+              color: theme.colors.textPrimary,
+              marginBottom: 6,
             }}
           >
-            • 12:06 PM — Sudden rise (+0.21 µS){'\n'}
-            • 09:47 AM — Gradual increase (+0.14 µS)
+            Possible Stress Drivers
+          </Text>
+
+          <Text
+            style={{
+              fontSize: 13,
+              lineHeight: 18,
+              color: theme.colors.textSecondary,
+            }}
+          >
+            • Sustained mental focus{'\n'}
+            • Emotional reactions or anxiety{'\n'}
+            • Caffeine or stimulant intake{'\n'}
+            • Poor sleep or accumulated fatigue
+          </Text>
+        </SpotlightCard>
+      </View>
+
+      {/* ---------- NERVOUS SYSTEM BALANCE ---------- */}
+      <View style={{ marginTop: theme.spacing.lg }}>
+        <SpotlightCard intensity={0.25}>
+          <Text
+            style={{
+              fontSize: 14,
+              fontWeight: '700',
+              color: theme.colors.textPrimary,
+              marginBottom: 6,
+            }}
+          >
+            Nervous System Balance
+          </Text>
+
+          <Text
+            style={{
+              fontSize: 13,
+              lineHeight: 18,
+              color: theme.colors.textSecondary,
+            }}
+          >
+            {stressed
+              ? 'Your sympathetic nervous system appears dominant today, indicating reduced relaxation.'
+              : 'Your autonomic balance appears stable, suggesting effective emotional regulation.'}
+          </Text>
+        </SpotlightCard>
+      </View>
+
+      {/* ---------- RECOVERY TREND ---------- */}
+      <View style={{ marginTop: theme.spacing.lg }}>
+        <SpotlightCard intensity={0.25}>
+          <Text
+            style={{
+              fontSize: 14,
+              fontWeight: '700',
+              color: theme.colors.textPrimary,
+              marginBottom: 6,
+            }}
+          >
+            Recovery Trend
+          </Text>
+
+          <Text
+            style={{
+              fontSize: 13,
+              lineHeight: 18,
+              color: theme.colors.textSecondary,
+            }}
+          >
+            {trend < 0
+              ? 'Stress levels are declining, indicating recovery.'
+              : trend > 0
+                ? 'Stress reactivity remains elevated today.'
+                : 'Stress levels are close to baseline.'}
+          </Text>
+        </SpotlightCard>
+      </View>
+
+      {/* ---------- HELPFUL ACTIONS ---------- */}
+      <View style={{ marginTop: theme.spacing.lg }}>
+        <SpotlightCard intensity={0.25}>
+          <Text
+            style={{
+              fontSize: 14,
+              fontWeight: '700',
+              color: theme.colors.textPrimary,
+              marginBottom: 6,
+            }}
+          >
+            Helpful Actions
+          </Text>
+
+          <Text
+            style={{
+              fontSize: 13,
+              lineHeight: 18,
+              color: theme.colors.textSecondary,
+            }}
+          >
+            • Take short breaks between cognitive tasks{'\n'}
+            • Light movement or stretching{'\n'}
+            • Reduce stimulant intake during stress{'\n'}
+            • Maintain regular sleep and hydration
           </Text>
         </SpotlightCard>
       </View>

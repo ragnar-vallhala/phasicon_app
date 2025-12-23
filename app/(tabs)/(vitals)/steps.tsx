@@ -123,9 +123,10 @@ export default function StepsScreen() {
             Movement Trend
           </Text>
 
+          {/* FIX: Use correct prop names */}
           <StepsTrendGraph
-            data={trend}
-            previousData={prevTrend}
+            current={trend}
+            previous={prevTrend}
           />
 
           <Text

@@ -36,7 +36,7 @@ export default function BreathingCoachCard({
   const lightRadius = useSharedValue(30); // New: Light spread radius
   const pulse = useSharedValue(0); // New: Subtle 3D pulse effect
 
-  const accent = stressed ? '#6EE7FF' : '#5B6CFF';
+  const accent = stressed ? '#6BFFC1' : '#2EEA8C';
 
   /* ---------- HAPTICS ---------- */
   const inhaleHaptic = () =>
@@ -91,7 +91,7 @@ export default function BreathingCoachCard({
 
     // Light emission synchronized with breathing
     lightIntensity.value = withRepeat(
-      withTiming(0.8, { 
+      withTiming(0.8, {
         duration: CYCLE_MS,
         easing: Easing.inOut(Easing.ease),
       }),
@@ -101,7 +101,7 @@ export default function BreathingCoachCard({
 
     // Light radius expands and contracts with breathing
     lightRadius.value = withRepeat(
-      withTiming(60, { 
+      withTiming(60, {
         duration: CYCLE_MS,
         easing: Easing.inOut(Easing.ease),
       }),
@@ -327,9 +327,9 @@ export default function BreathingCoachCard({
           </Animated.View>
 
           {/* LIGHT RAYS (subtle effect) */}
-          <View style={{ 
-            position: 'absolute', 
-            width: 240, 
+          <View style={{
+            position: 'absolute',
+            width: 240,
             height: 240,
             zIndex: 0,
           }}>
@@ -358,8 +358,8 @@ export default function BreathingCoachCard({
           </View>
 
           {/* TEXT */}
-          <View style={{ 
-            position: 'absolute', 
+          <View style={{
+            position: 'absolute',
             alignItems: 'center',
             zIndex: 10, // Ensure text is on top
           }}>

@@ -62,6 +62,16 @@ export default function VitalCard({
 
   const iconName = ICON_MAP[label] ?? 'analytics';
 
+  const spotlightColor = alert
+    ? alertColor
+    : status.toLowerCase().includes('normal')
+      ? '#3DDC97'
+      : status.toLowerCase().includes('optimal')
+        ? '#3DDC97'
+        : status.toLowerCase().includes('elevated')
+          ? '#FFC857'
+          : theme.colors.primary;
+
   return (
     <Pressable
       onPress={() => {
@@ -77,7 +87,7 @@ export default function VitalCard({
         color={alertColor}
         intensity={label === 'Heart Rate' ? 1.2 : 0.8}
       >
-        <SpotlightCard intensity={alert ? 0.65 : 0.35}>
+        <SpotlightCard intensity={alert ? 0.65 : 0.35} accentColor={spotlightColor} showChevron={!!onPress}>
           {/* HEADER */}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             {label === 'Heart Rate' ? (
