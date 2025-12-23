@@ -19,7 +19,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, password: string) => Promise<any>;
+  signup: ( email: string, password: string) => Promise<any>;
   verifyOTP: (email: string, otp: string) => Promise<any>;
   logout: () => Promise<void>;
 }
@@ -39,13 +39,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const loadUser = async () => {
     try {
       const userData = await AsyncStorage.getItem('user_data');
-      if (userData) {
+      const accessToken = await AsyncStorage.getItem('access_token');
+
+      if (userData && accessToken) {
         setUser(JSON.parse(userData));
+      } else {
+        setUser(null);
       }
+    } catch {
+      setUser(null);
     } finally {
-      setIsLoading(false); // 🔥 MUST always resolve
+      setIsLoading(false);
     }
   };
+
 
   /* ---------------- LOGIN ---------------- */
 
@@ -58,6 +65,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await setTokens(accessToken, refreshToken);
       await AsyncStorage.setItem('user_data', JSON.stringify(user));
       setUser(user);
+    } catch (err: any) {
+      setUser(null);
+      throw err;
     } finally {
       setIsLoading(false); // 🔥 THIS WAS MISSING
     }
@@ -65,8 +75,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   /* ---------------- SIGNUP ---------------- */
 
-  const signup = async (name: string, email: string, password: string) => {
-    return signupAPI(name, email, password);
+  const signup = async (email: string, password: string) => {
+    return signupAPI(email, password);
   };
 
   /* ---------------- OTP ---------------- */

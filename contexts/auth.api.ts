@@ -19,7 +19,6 @@ export const loginAPI = async (
 /* ---------------- SIGNUP ---------------- */
 
 export const signupAPI = async (
-  name: string,
   email: string,
   password: string
 ) => {

@@ -1,0 +1,13 @@
+```
+npx expo prebuild       
+mkdir -p android/app/src/main/assets 
+npx react-native bundle \
+                         --platform android \
+                         --dev false \
+                         --entry-file node_modules/expo/AppEntry.js \
+                         --bundle-output android/app/src/main/assets/index.android.bundle \
+                         --assets-dest android/app/src/main/res
+cd android
+./gradlew assembleRelease
+```
+

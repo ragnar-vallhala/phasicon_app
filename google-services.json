@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "777193448144",
+    "project_id": "phasiconapp",
+    "storage_bucket": "phasiconapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:777193448144:android:59a99e43c24e18f982f4d5",
+        "android_client_info": {
+          "package_name": "com.ashuji2004.phasiconapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6KWMdtmjPDNaCJ0Bgs9htP4FqAdhdlPo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

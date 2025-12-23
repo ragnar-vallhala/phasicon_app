@@ -1,204 +1,183 @@
 import { Stack, useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import api from '@/contexts/axios.instance';
 import { useAuth } from '@/contexts/AuthContext';
-import { getAccessToken, getRefreshToken, clearTokens } from '@/contexts/token.service';
+import {
+  getAccessToken,
+  getRefreshToken,
+  clearTokens,
+} from '@/contexts/token.service';
+import { useTheme } from '@/theme/ThemeProvider';
+import ProfileForm from '@/components/profile/ProfileForm';
 
 export default function CompleteProfileScreen() {
-    const router = useRouter();
-    const { user } = useAuth();
-    const [checkingAuth, setCheckingAuth] = useState(true);
-    const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const theme = useTheme();
+  const { user } = useAuth();
 
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [phone, setPhone] = useState('');
-    const [dob, setDob] = useState('');
-    const [address1, setAddress1] = useState('');
-    const [address2, setAddress2] = useState('');
-    const [state, setState] = useState('');
-    const [pincode, setPincode] = useState('');
-    
-    useEffect(() => {
-        const validateAuth = async () => {
-            const accessToken = await getAccessToken();
-            const refreshToken = await getRefreshToken();
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    dob: '',
+    address1: '',
+    address2: '',
+    state: '',
+    pincode: '',
+  });
 
-            if (!user || !accessToken || !refreshToken) {
-                console.log('🚨 Invalid auth state on CompleteProfile', {
-                    user,
-                    accessToken,
-                    refreshToken,
-                });
+  useEffect(() => {
+    const validateAuth = async () => {
+      const accessToken = await getAccessToken();
+      const refreshToken = await getRefreshToken();
 
-                await clearTokens();
-                router.replace('/(auth)/login');
-                return;
-            }
+      if (!user || !accessToken || !refreshToken) {
+        await clearTokens();
+        router.replace('/(auth)/login');
+        return;
+      }
 
-            setCheckingAuth(false);
-        };
-
-        validateAuth();
-    }, []);
-
-
-    const handleSubmit = async () => {
-        if (!firstName || !phone) {
-            Alert.alert('Error', 'First name and phone are required');
-            return;
-        }
-
-        setLoading(true);
-        try {
-            await api.put(`/profiles/${user?.id}`, {
-                first_name: firstName,
-                last_name: lastName,
-                phone,
-                dob,
-                address_line1: address1,
-                address_line2: address2,
-                state,
-                pincode,
-            });
-
-            Alert.alert('Success', 'Profile completed');
-            router.replace('/(tabs)');
-        } catch (err: any) {
-
-            console.log('PROFILE UPDATE ERROR', {
-                status: err.response?.status,
-                data: err.response?.data,
-                headers: err.response?.headers,
-                user: user
-            });
-            console.log(err);
-
-            Alert.alert(
-                'Error',
-                err.response?.data?.error || 'Failed to update profile'
-            );
-        } finally {
-            setLoading(false);
-        }
+      setCheckingAuth(false);
     };
 
-    return (
-        <>
-            <Stack.Screen
-                options={{
-                    title: 'Complete Profile',
-                    headerBackVisible: false, // 🚫 no going back
-                }}
-            />
+    validateAuth();
+  }, []);
 
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={{ flex: 1, backgroundColor: '#fff' }}
+  const handleSubmit = async () => {
+    if (!form.firstName || !form.phone) {
+      Alert.alert('Error', 'First name and phone are required');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await api.put(`/profiles/${user?.id}`, {
+        first_name: form.firstName,
+        last_name: form.lastName,
+        phone: form.phone,
+        dob: form.dob,
+        address_line1: form.address1,
+        address_line2: form.address2,
+        state: form.state,
+        pincode: form.pincode,
+      });
+
+      Alert.alert('Success', 'Profile completed');
+      router.replace('/(tabs)');
+    } catch (err: any) {
+      Alert.alert(
+        'Error',
+        err.response?.data?.error || 'Failed to update profile'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (checkingAuth) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: theme.colors.background,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <ActivityIndicator color={theme.colors.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <>
+      <Stack.Screen
+        options={{
+          title: '',
+          headerBackVisible: false,
+          headerStyle: { backgroundColor: theme.colors.background },
+          headerTintColor: theme.colors.textPrimary,
+        }}
+      />
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1, backgroundColor: theme.colors.background }}
+      >
+        <ScrollView
+          contentContainerStyle={{
+            padding: theme.spacing.lg,
+            paddingBottom: theme.spacing.xl,
+          }}
+        >
+          {/* Header */}
+          <View style={{ marginBottom: theme.spacing.xl }}>
+            <Text
+              style={{
+                fontSize: 28,
+                fontWeight: '700',
+                color: theme.colors.textPrimary,
+                marginBottom: 6,
+              }}
             >
-                <ScrollView
-                    contentContainerStyle={{
-                        padding: 20,
-                        paddingBottom: 40,
-                    }}
-                >
-                    <Text
-                        style={{
-                            fontSize: 26,
-                            fontWeight: '700',
-                            marginBottom: 10,
-                        }}
-                    >
-                        Complete your profile
-                    </Text>
+              Complete your profile
+            </Text>
+            <Text
+              style={{
+                color: theme.colors.textSecondary,
+                fontSize: 14,
+              }}
+            >
+              This information is required to continue
+            </Text>
+          </View>
 
-                    <Text style={{ color: '#666', marginBottom: 30 }}>
-                        This information is required to continue
-                    </Text>
+          {/* Form */}
+          <ProfileForm form={form} setForm={setForm} />
 
-                    <Input label="First Name *" value={firstName} onChange={setFirstName} />
-                    <Input label="Last Name" value={lastName} onChange={setLastName} />
-                    <Input
-                        label="Phone *"
-                        value={phone}
-                        onChange={setPhone}
-                        keyboardType="phone-pad"
-                    />
-                    <Input label="Date of Birth" value={dob} onChange={setDob} />
-                    <Input label="Address Line 1" value={address1} onChange={setAddress1} />
-                    <Input label="Address Line 2" value={address2} onChange={setAddress2} />
-                    <Input label="State" value={state} onChange={setState} />
-                    <Input
-                        label="Pincode"
-                        value={pincode}
-                        onChange={setPincode}
-                        keyboardType="numeric"
-                    />
-
-                    <TouchableOpacity
-                        onPress={handleSubmit}
-                        disabled={loading}
-                        style={{
-                            backgroundColor: loading ? '#ccc' : '#007AFF',
-                            padding: 16,
-                            borderRadius: 10,
-                            alignItems: 'center',
-                            marginTop: 20,
-                        }}
-                    >
-                        {loading ? (
-                            <ActivityIndicator color="#fff" />
-                        ) : (
-                            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
-                                Save & Continue
-                            </Text>
-                        )}
-                    </TouchableOpacity>
-                </ScrollView>
-            </KeyboardAvoidingView>
-        </>
-    );
-}
-
-/* ------------------ Reusable Input ------------------ */
-
-function Input({
-    label,
-    value,
-    onChange,
-    keyboardType,
-}: {
-    label: string;
-    value: string;
-    onChange: (v: string) => void;
-    keyboardType?: any;
-}) {
-    return (
-        <View style={{ marginBottom: 14 }}>
-            <Text style={{ marginBottom: 6, fontWeight: '500' }}>{label}</Text>
-            <TextInput
-                value={value}
-                onChangeText={onChange}
-                keyboardType={keyboardType}
+          {/* CTA */}
+          <TouchableOpacity
+            onPress={handleSubmit}
+            disabled={loading}
+            activeOpacity={0.85}
+            style={{
+              backgroundColor: loading
+                ? theme.colors.surface
+                : theme.colors.primary,
+              paddingVertical: 18,
+              borderRadius: theme.radius.md,
+              alignItems: 'center',
+              marginTop: theme.spacing.lg,
+            }}
+          >
+            {loading ? (
+              <ActivityIndicator color={theme.colors.background} />
+            ) : (
+              <Text
                 style={{
-                    borderWidth: 1,
-                    borderColor: '#ddd',
-                    borderRadius: 8,
-                    padding: 12,
-                    fontSize: 16,
+                  color: theme.colors.background,
+                  fontSize: 16,
+                  fontWeight: '600',
                 }}
-            />
-        </View>
-    );
+              >
+                Save & Continue
+              </Text>
+            )}
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </>
+  );
 }
