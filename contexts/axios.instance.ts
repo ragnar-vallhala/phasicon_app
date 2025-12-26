@@ -9,6 +9,7 @@ import {
 import { clearCredentials } from './credential.service';
 
 const API_URL = 'http://72.60.102.111:8080';
+const AUTH_BASE_URL = 'http://72.60.102.111:8080';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -73,7 +74,7 @@ api.interceptors.response.use(
         }
 
         // Call refresh endpoint
-        const response = await axios.post(`${API_URL}/auth/refresh`, {
+        const response = await axios.post(`${AUTH_BASE_URL}/auth/refresh`, {
           refresh_token: refreshToken,
         });
 

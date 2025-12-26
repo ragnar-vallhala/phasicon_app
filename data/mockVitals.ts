@@ -1,10 +1,10 @@
 // data/mockVitals.ts
 export const mockVitals = {
   heartRate: {
-    value: 120,
+    value: 130,
     unit: 'bpm',
     trend: +3,
-    status: 'elevated',
+    status: 'Normal',
     threshold: {
       min: 50,
       max: 110,
@@ -18,7 +18,7 @@ export const mockVitals = {
   },
 
   spo2: {
-    value: 99,
+    value: 98,
     unit: '%',
     trend: 0,
     status: 'Optimal',
@@ -38,7 +38,7 @@ export const mockVitals = {
   },
 
   gsr: {
-    value: 4.2,
+    value: 1.2,
     unit: 'µS',
     trend: -0.08,
     status: 'Calm',
@@ -106,5 +106,23 @@ export const mockVitals = {
       Monthly: [18000, 22000, 26000, 31000, 36000],
       Lifetime: [5000, 15000, 30000, 60000],
     },
+  },
+
+  // Add these missing trend objects:
+  spo2Trend: {
+    current: [97, 96, 98, 97, 98, 97],
+    previous: [96, 95, 96, 96, 97, 96],
+    baseline: 96,
+  },
+
+  gsrTrend: {
+    hourly: [0.7, 0.8, 0.9, 1.1, 1.3, 1.1, 0.9, 0.8, 0.7, 0.8, 0.9, 1.0],
+    daily: [1.6, 1.4, 1.3, 1.25, 1.2],
+    weekly: [1.8, 1.6, 1.5, 1.4, 1.3],
+  },
+
+  heartRateTrend: {
+    hourly: [75, 78, 82, 85, 88, 92, 95, 98, 102, 108, 115, 120],
+    daily: [88, 92, 95, 110, 130],
   },
 };

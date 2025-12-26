@@ -1,5 +1,5 @@
 import { View, Text, ScrollView } from 'react-native';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 
@@ -13,32 +13,103 @@ import StepsSummaryCard from '@/components/StepsSummaryCard';
 import StepsTrendCard from '@/components/StepsTrendCard';
 import { mockSteps } from '@/data/mockSteps';
 
-import { mockActivityData } from '@/data/mockActivity';
 import { aggregateByActivity, dominantActivity } from '@/utils/aggregate';
+import { fetchCameraSummary } from '@/contexts/camera.service';
+import { getTimeRange } from '@/utils/timeRange';
+import { calculateIdleActive } from '@/utils/calculateIdleActive';
+import { formatLabel } from '@/utils/formatLabel';
+
+type Range = 'Daily' | 'Weekly' | 'Monthly' | 'Lifetime';
+
+type ActivityItem = {
+  activity: string;
+  seconds: number;
+};
 
 export default function ActivityIndex() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
 
-  const [range, setRange] =
-    useState<'Daily' | 'Weekly' | 'Monthly' | 'Lifetime'>('Daily');
+  const USER_ID = 41; // TODO: move to auth context
 
-  const [counterKey, setCounterKey] = useState(0);
+  const [range, setRange] = useState<Range>('Daily');
+  const [activityData, setActivityData] = useState<ActivityItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // 🔁 Reset counters when screen opens
+  const isFirstLoad = useRef(true);
+
+  /* 🔁 Reset animated counters when screen gains focus */
   useFocusEffect(
     useCallback(() => {
-      setCounterKey(prev => prev + 1);
+      isFirstLoad.current = true;
     }, [])
   );
 
-  // 🔁 Later filter by range
-  const aggregated = aggregateByActivity(mockActivityData);
+  /* 🔁 Poll server every 5 seconds */
+  useFocusEffect(
+    useCallback(() => {
+      let mounted = true;
+      let interval: NodeJS.Timeout;
+
+      async function loadActivity() {
+        try {
+          if (isFirstLoad.current) {
+            setLoading(true);
+          } else {
+            setRefreshing(true);
+          }
+
+          const { start, end } = getTimeRange(range);
+          const res = await fetchCameraSummary(USER_ID, start, end);
+
+          if (!mounted) return;
+
+          const normalized: ActivityItem[] = res.map(item => ({
+            activity: item.activity,
+            seconds: Number(item.total_seconds) || 0,
+          }));
+
+          // 🔒 Prevent unnecessary re-renders
+          setActivityData(prev => {
+            if (JSON.stringify(prev) === JSON.stringify(normalized)) {
+              return prev;
+            }
+            return normalized;
+          });
+
+          isFirstLoad.current = false;
+        } catch (e) {
+          console.error('Failed to fetch activity summary', e);
+        } finally {
+          setLoading(false);
+          setRefreshing(false);
+        }
+      }
+
+      loadActivity(); // immediate fetch
+      interval = setInterval(loadActivity, 5000);
+
+      return () => {
+        mounted = false;
+        clearInterval(interval);
+      };
+    }, [range])
+  );
+
+  /* ---------- DERIVED DATA ---------- */
+
+  const aggregated = aggregateByActivity(activityData);
   const dominant = dominantActivity(aggregated);
 
-  // Mock insights (minutes)
-  const totalActive = 272;
-  const idleTime = 370;
+  const { activeMinutes, idleMinutes } = calculateIdleActive(
+    activityData.map(item => ({
+      activity: item.activity,
+      total_seconds: item.seconds,
+    }))
+  );
+
+  /* ---------- UI ---------- */
 
   return (
     <ScrollView
@@ -50,7 +121,7 @@ export default function ActivityIndex() {
       }}
       showsVerticalScrollIndicator={false}
     >
-      {/* ---------- HEADER ---------- */}
+      {/* HEADER */}
       <Text
         style={{
           fontSize: 26,
@@ -71,16 +142,13 @@ export default function ActivityIndex() {
         Vision-derived movement intelligence
       </Text>
 
-      {/* ---------- RANGE ---------- */}
+      {/* RANGE */}
       <TimeRangeSelector
         value={range}
-        onChange={(r) => {
-          setRange(r);
-          setCounterKey(prev => prev + 1);
-        }}
+        onChange={setRange}
       />
 
-      {/* ---------- DOMINANT ACTIVITY ---------- */}
+      {/* DOMINANT */}
       <SpotlightCard intensity={0.35}>
         <Text
           style={{
@@ -100,7 +168,7 @@ export default function ActivityIndex() {
             marginTop: 6,
           }}
         >
-          {dominant.toUpperCase()}
+          {dominant ? formatLabel(dominant) : '—'}
         </Text>
 
         <Text
@@ -115,7 +183,7 @@ export default function ActivityIndex() {
         </Text>
       </SpotlightCard>
 
-      {/* ---------- QUICK INSIGHTS ---------- */}
+      {/* INSIGHTS */}
       <View
         style={{
           flexDirection: 'row',
@@ -123,20 +191,11 @@ export default function ActivityIndex() {
           gap: theme.spacing.md,
         }}
       >
-        <InsightCard
-          key={`active-${counterKey}`}
-          label="Active Time"
-          minutes={totalActive}
-        />
-
-        <InsightCard
-          key={`idle-${counterKey}`}
-          label="Idle Time"
-          minutes={idleTime}
-        />
+        <InsightCard label="Active Time" minutes={activeMinutes} />
+        <InsightCard label="Idle Time" minutes={idleMinutes} />
       </View>
 
-      {/* ---------- DISTRIBUTION ---------- */}
+      {/* BREAKDOWN */}
       <View style={{ marginTop: theme.spacing.xl }}>
         <Text
           style={{
@@ -149,25 +208,31 @@ export default function ActivityIndex() {
           Activity Breakdown
         </Text>
 
-        <ActivityBreakdown data={aggregated} />
+        {loading ? (
+          <Text style={{ color: theme.colors.textMuted }}>
+            Loading activity…
+          </Text>
+        ) : (
+          <ActivityBreakdown data={aggregated} />
+        )}
       </View>
-      {/* ---------- STEPS CARD ---------- */}
+
+      {/* STEPS (mock) */}
       <View style={{ marginTop: theme.spacing.lg, gap: theme.spacing.md }}>
         <StepsSummaryCard
-          key={`steps-summary-${counterKey}-${range}`}
           steps={mockSteps[range].total}
           previousSteps={mockSteps[range].previousTotal}
           range={range}
         />
 
         <StepsTrendCard
-          key={`steps-trend-${counterKey}-${range}`}
           trend={mockSteps[range].trend}
           previousTrend={mockSteps[range].previousTrend}
           range={range}
         />
       </View>
-      {/* ---------- FOOTNOTE ---------- */}
+
+      {/* FOOTNOTE */}
       <Text
         style={{
           marginTop: theme.spacing.xl,
@@ -212,7 +277,7 @@ function InsightCard({
         {label}
       </Text>
 
-      <AnimatedCounter value={minutes} mode='minutes' />
+      <AnimatedCounter value={minutes} mode="minutes" />
     </View>
   );
 }

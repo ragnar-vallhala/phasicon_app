@@ -1,12 +1,23 @@
 import { View, Text } from 'react-native';
 import { useTheme } from '@/theme/ThemeProvider';
+import { formatLabel } from '@/utils/formatLabel';
+import { formatDuration } from '@/utils/formatDuration';
+
+type ActivityAgg = {
+  activity: string;
+  seconds: number;
+};
 
 export default function ActivityBreakdown({
   data,
 }: {
-  data: Record<string, number>;
+  data: Record<string, ActivityAgg>;
 }) {
   const theme = useTheme();
+
+  const sorted = Object.values(data)
+    .filter(item => item.seconds > 0)
+    .sort((a, b) => b.seconds - a.seconds);
 
   return (
     <View
@@ -16,23 +27,37 @@ export default function ActivityBreakdown({
         padding: theme.spacing.md,
       }}
     >
-      {Object.entries(data).map(([key, value]) => (
-        <View
-          key={key}
+      {sorted.length === 0 ? (
+        <Text
           style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            paddingVertical: 6,
+            textAlign: 'center',
+            color: theme.colors.textMuted,
+            fontSize: 13,
+            paddingVertical: theme.spacing.md,
           }}
         >
-          <Text style={{ color: theme.colors.textPrimary }}>
-            {key.toUpperCase()}
-          </Text>
-          <Text style={{ color: theme.colors.textSecondary }}>
-            {Math.round(value / 60)} hrs
-          </Text>
-        </View>
-      ))}
+          No activity detected in this time range
+        </Text>
+      ) : (
+        sorted.map(item => (
+          <View
+            key={item.activity}
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              paddingVertical: 6,
+            }}
+          >
+            <Text style={{ color: theme.colors.textPrimary }}>
+              {formatLabel(item.activity)}
+            </Text>
+
+            <Text style={{ color: theme.colors.textSecondary }}>
+              {formatDuration(item.seconds)}
+            </Text>
+          </View>
+        ))
+      )}
     </View>
   );
 }
