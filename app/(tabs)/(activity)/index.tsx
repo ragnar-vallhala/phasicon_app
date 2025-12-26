@@ -8,10 +8,7 @@ import TimeRangeSelector from '@/components/TimeRangeSelector';
 import ActivityBreakdown from '@/components/ActivityBreakdown';
 import SpotlightCard from '@/components/SpotlightCard';
 import AnimatedCounter from '@/components/AnimatedCounter';
-
-import StepsSummaryCard from '@/components/StepsSummaryCard';
-import StepsTrendCard from '@/components/StepsTrendCard';
-import { mockSteps } from '@/data/mockSteps';
+import { useAuth } from '@/contexts/AuthContext';
 
 import { aggregateByActivity, dominantActivity } from '@/utils/aggregate';
 import { fetchCameraSummary } from '@/contexts/camera.service';
@@ -29,8 +26,8 @@ type ActivityItem = {
 export default function ActivityIndex() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-
-  const USER_ID = 41; // TODO: move to auth context
+  const { user } = useAuth();
+  const USER_ID = user?.id; // TODO: move to auth context
 
   const [range, setRange] = useState<Range>('Daily');
   const [activityData, setActivityData] = useState<ActivityItem[]>([]);
@@ -217,21 +214,6 @@ export default function ActivityIndex() {
         )}
       </View>
 
-      {/* STEPS (mock) */}
-      <View style={{ marginTop: theme.spacing.lg, gap: theme.spacing.md }}>
-        <StepsSummaryCard
-          steps={mockSteps[range].total}
-          previousSteps={mockSteps[range].previousTotal}
-          range={range}
-        />
-
-        <StepsTrendCard
-          trend={mockSteps[range].trend}
-          previousTrend={mockSteps[range].previousTrend}
-          range={range}
-        />
-      </View>
-
       {/* FOOTNOTE */}
       <Text
         style={{
@@ -241,7 +223,7 @@ export default function ActivityIndex() {
           color: theme.colors.textMuted,
         }}
       >
-        Classification inferred using on-device visual models.
+        Classification inferred using AI visual models.
       </Text>
     </ScrollView>
   );
